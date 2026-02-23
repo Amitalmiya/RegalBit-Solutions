@@ -1,20 +1,113 @@
 {
   "shifts": [
-    { "id": "s1", "employeeId": "e1", "dayIndex": 0, "startHour": 8,  "endHour": 14, "label": "Morning" },
-    { "id": "s2", "employeeId": "e1", "dayIndex": 1, "startHour": 8,  "endHour": 14, "label": "Morning" },
-    { "id": "s3", "employeeId": "e1", "dayIndex": 2, "startHour": 9,  "endHour": 17, "label": "Mid" },
-    { "id": "s4", "employeeId": "e1", "dayIndex": 4, "startHour": 8,  "endHour": 16, "label": "Morning" },
-    { "id": "s5", "employeeId": "e2", "dayIndex": 1, "startHour": 10, "endHour": 18, "label": "Afternoon" },
-    { "id": "s6", "employeeId": "e3", "dayIndex": 0, "startHour": 9,  "endHour": 17, "label": "Full Day" },
-    { "id": "s7", "employeeId": "e3", "dayIndex": 3, "startHour": 9,  "endHour": 17, "label": "Full Day" },
-    { "id": "s8", "employeeId": "e4", "dayIndex": 4, "startHour": 14, "endHour": 22, "label": "Night" },
-    { "id": "s9", "employeeId": "e5", "dayIndex": 2, "startHour": 7,  "endHour": 15, "label": "Dawn" }
+    {
+      "id": "s1",
+      "employeeId": "e1",
+      "dayIndex": 0,
+      "startHour": 8,
+      "endHour": 13,
+      "label": "Morning"
+    },
+    {
+      "id": "s2",
+      "employeeId": "e1",
+      "dayIndex": 1,
+      "startHour": 7.5,
+      "endHour": 13.5,
+      "label": "Morning"
+    },
+    {
+      "id": "s3",
+      "employeeId": "e1",
+      "dayIndex": 3,
+      "startHour": 6,
+      "endHour": 14,
+      "label": "Mid"
+    },
+    {
+      "id": "s4",
+      "employeeId": "e1",
+      "dayIndex": 4,
+      "startHour": 8,
+      "endHour": 16,
+      "label": "Morning"
+    },
+    {
+      "id": "s5",
+      "employeeId": "e2",
+      "dayIndex": 0,
+      "startHour": 8.5,
+      "endHour": 16.5,
+      "label": "Afternoon"
+    },
+    {
+      "id": "s6",
+      "employeeId": "e3",
+      "dayIndex": 0,
+      "startHour": 9,
+      "endHour": 17,
+      "label": "Full Day"
+    },
+    {
+      "id": "s7",
+      "employeeId": "e3",
+      "dayIndex": 4,
+      "startHour": 7.5,
+      "endHour": 15.5,
+      "label": "Full Day"
+    },
+    {
+      "id": "s8",
+      "employeeId": "e4",
+      "dayIndex": 4,
+      "startHour": 8.5,
+      "endHour": 16.5,
+      "label": "Night"
+    },
+    {
+      "id": "s9",
+      "employeeId": "e5",
+      "dayIndex": 1,
+      "startHour": 6,
+      "endHour": 14,
+      "label": "Dawn"
+    }
   ],
   "employees": [
-    { "id": "e1", "name": "Alex Rivera",   "role": "Barista",  "color": "#6C63FF", "avatarInitials": "AR" },
-    { "id": "e2", "name": "Sam Chen",      "role": "Cashier",  "color": "#FF6584", "avatarInitials": "SC" },
-    { "id": "e3", "name": "Jordan Lee",    "role": "Manager",  "color": "#43D9AD", "avatarInitials": "JL" },
-    { "id": "e4", "name": "Taylor Mwangi","role": "Barback",  "color": "#F5A623", "avatarInitials": "TM" },
-    { "id": "e5", "name": "Morgan Blake",  "role": "Barista",  "color": "#38BDF8", "avatarInitials": "MB" }
+    {
+      "id": "e1",
+      "name": "Alex Rivera",
+      "role": "Barista",
+      "color": "#6C63FF",
+      "avatarInitials": "AR"
+    },
+    {
+      "id": "e2",
+      "name": "Sam Chen",
+      "role": "Cashier",
+      "color": "#FF6584",
+      "avatarInitials": "SC"
+    },
+    {
+      "id": "e3",
+      "name": "Jordan Lee",
+      "role": "Manager",
+      "color": "#43D9AD",
+      "avatarInitials": "JL"
+    },
+    {
+      "id": "e4",
+      "name": "Taylor Mwangi",
+      "role": "Barback",
+      "color": "#F5A623",
+      "avatarInitials": "TM"
+    },
+    {
+      "id": "e5",
+      "name": "Morgan Blake",
+      "role": "Barista",
+      "color": "#38BDF8",
+      "avatarInitials": "MB"
+    }
   ]
 }

@@ -8,7 +8,7 @@ const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-
+// Employees
 export async function fetchEmployees(): Promise<Employee[]> {
   const { data } = await api.get<Employee[]>("/employees");
   return data;
@@ -28,6 +28,7 @@ export async function deleteEmployee(id: string): Promise<void> {
   await api.delete(`/employees/${id}`);
 }
 
+// Shifts
 
 export async function fetchShifts(): Promise<Shift[]> {
   const { data } = await api.get<Shift[]>("/shifts");
@@ -46,4 +47,19 @@ export async function updateShift(shift: Shift): Promise<Shift> {
 
 export async function deleteShift(id: string): Promise<void> {
   await api.delete(`/shifts/${id}`);
+}
+
+export async function createShiftsBulk(shifts: Shift[]): Promise<Shift[]> {
+  return Promise.all(shifts.map((s) => createShift(s)));
+}
+
+export async function deleteEmployeeWithShifts(
+  employeeId: string,
+  allShifts: Shift[]
+): Promise<void> {
+  const employeeShifts = allShifts.filter((s) => s.employeeId === employeeId);
+  await Promise.all([
+    deleteEmployee(employeeId),
+    ...employeeShifts.map((s) => deleteShift(s.id)),
+  ]);
 }

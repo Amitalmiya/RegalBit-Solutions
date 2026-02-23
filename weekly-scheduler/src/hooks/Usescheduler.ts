@@ -1,178 +1,186 @@
-import { useCallback, useEffect, useState } from "react";
-import type { Shift, Employee } from "../types/scheduler";
+import { useCallback } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  fetchEmployees,
-  createEmployee,
-  updateEmployee,
-  deleteEmployee,
   fetchShifts,
+  fetchEmployees,
   createShift,
   updateShift,
   deleteShift,
+  createShiftsBulk,
+  createEmployee,
+  updateEmployee,
+  deleteEmployeeWithShifts,
 } from "../services/Api";
+import { queryKeys } from "../lib/Querykeys";
+import { Shift, Employee } from "../types/scheduler";
 
-interface UseSchedulerReturn {
-  shifts: Shift[];
-  employees: Employee[];
-  loading: boolean;
-  error: string | null;
-  addEmployee: (employee: Employee) => Promise<void>;
-  editEmployee: (employee: Employee) => Promise<void>;
-  removeEmployee: (id: string) => Promise<void>;
-  addShift: (shift: Shift) => Promise<void>;
-  editShift: (shift: Shift) => Promise<void>;
-  removeShift: (id: string) => Promise<void>;
-  copyShifts: (shifts: Shift[]) => Promise<void>;
-  updateShiftLocal: (shift: Shift) => void;
-  persistShift: (shift: Shift) => Promise<void>;
-}
+export function useScheduler() {
+    const queryClient = useQueryClient();
 
-export function useScheduler(): UseSchedulerReturn {
-  const [shifts, setShifts] = useState<Shift[]>([]);
-  const [employees, setEmployees] = useState<Employee[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+    const {
+        data: employees = [],
+        isLoading: employeesLoading,
+        isError: employeesError,
+    } = useQuery<Employee[]>({
+        queryKey: queryKeys.employees,
+        queryFn: fetchEmployees,
+    });
 
-  useEffect(() => {
-    async function load() {
-      try {
-        setLoading(true);
-        setError(null);
+    const {
+        data: shifts = [],
+        isLoading: shiftsLoading,
+        isError: shiftsError,
+    } = useQuery<Shift[]>({
+        queryKey: queryKeys.shifts,
+        queryFn: fetchShifts,
+    });
 
-        const [shiftsData, employeesData] = await Promise.all([
-          fetchShifts(),
-          fetchEmployees(),
-        ]);
+    const loading = employeesLoading || shiftsLoading;
+    const error = 
+        employeesError || shiftsError ? "Failed to load data. Is json-server running on port:5000" : null;
 
-        setShifts(shiftsData);
-        setEmployees(employeesData);
-      } catch (err) {
-        setError("Failed to load data. Is json-server running on port 3001?");
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
+    // Shift
 
-    load();
-  }, []);
+    const addShiftMutation = useMutation({
+        mutationFn: (shift: Shift) => createShift(shift),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.shifts });
+        },
+        onError: (error) => console.error("Failed to create shift: ", error)
+    });
 
-  // Employee CRUD
+    const editShiftMutation = useMutation({
+        mutationFn: (shift: Shift) => updateShift(shift),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.shifts });
+        },
+        onError: (error) => console.error("Failed to update shift: ", error)
+    });
 
-  const addEmployee = useCallback(async (employee: Employee) => {
-    try {
-      setError(null);
-      const saved = await createEmployee(employee);
-      setEmployees((prev) => [...prev, saved]);
-    } catch (err) {
-      setError("Failed to create employee.");
-      console.error(err);
-    }
-  }, []);
+    const deleteShiftMutation = useMutation({
+        mutationFn: (id: string) => deleteShift(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.shifts });
+        },
+        onError: (error) => console.error("Failed to delete shift ", error)
+    });
 
-  const editEmployee = useCallback(async (employee: Employee) => {
-    try {
-      setError(null);
-      const saved = await updateEmployee(employee);
-      setEmployees((prev) =>
-        prev.map((emp) => (emp.id === saved.id ? saved : emp))
-      );
-    } catch (err) {
-      setError("Failed to update employee.");
-      console.error(err);
-    }
-  }, []);
+    const copyShiftsMutation = useMutation({
+        mutationFn: (newShifts: Shift[]) => createShiftsBulk(newShifts),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.shifts });
+        },
+        onError: (err) => console.error("Failed to copy shifts:", err),
+    });
 
-  const removeEmployee = useCallback(async (id: string) => {
-    try {
-      setError(null);
-      await deleteEmployee(id);
-      setEmployees((prev) => prev.filter((emp) => emp.id !== id));
-    } catch (err) {
-      setError("Failed to delete employee.");
-      console.error(err);
-    }
-  }, []);
+    const persistShiftMutation = useMutation({
+        mutationFn: (shift: Shift) => updateShift(shift),
+        onError: (err) => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.shifts });
+            console.error("Failed to persist shift position:", err);  // ← inside {}
+    },
+    });
 
-  // Shift CRUD
-
-  const addShift = useCallback(async (shift: Shift) => {
-    try {
-      setError(null);
-      const saved = await createShift(shift);
-      setShifts((prev) => [...prev, saved]);
-    } catch (err) {
-      setError("Failed to create shift.");
-      console.error(err);
-    }
-  }, []);
-
-  const editShift = useCallback(async (shift: Shift) => {
-    try {
-      setError(null);
-      const saved = await updateShift(shift);
-      setShifts((prev) =>
-        prev.map((s) => (s.id === saved.id ? saved : s))
-      );
-    } catch (err) {
-      setError("Failed to update shift.");
-      console.error(err);
-    }
-  }, []);
-
-  const removeShift = useCallback(async (id: string) => {
-    try {
-      setError(null);
-      await deleteShift(id);
-      setShifts((prev) => prev.filter((s) => s.id !== id));
-    } catch (err) {
-      setError("Failed to delete shift.");
-      console.error(err);
-    }
-  }, []);
-
-  const updateShiftLocal = useCallback((shift: Shift) => {
-    setShifts((prev) =>
-      prev.map((s) => (s.id === shift.id ? shift : s))
+    const updateShiftLocal = useCallback(
+        (updatedShift: Shift) => {
+            queryClient.setQueryData<Shift[]>(queryKeys.shifts, (prev = []) =>
+            prev.map((s) => (s.id === updatedShift.id ? updatedShift : s))
+        );
+        },
+        [queryClient]
     );
-  }, []);
 
-  const persistShift = useCallback(async (shift: Shift) => {
-    try {
-      setError(null);
-      await updateShift(shift);
-    } catch (err) {
-      setError("Failed to save shift position.");
-      console.error(err);
+    // Employee
+
+    const addEmployeeMutation = useMutation({
+        mutationFn: (employee: Employee) => createEmployee(employee),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.employees });
+        },
+        onError: (error) => console.error("Failed to add employee: ", error),
+    });
+
+    const editEmployeeMutation = useMutation({
+        mutationFn: (employee: Employee) => updateEmployee(employee),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.employees });
+        },
+        onError: (error) => console.error("Failed to update employee: ", error),
+    });
+
+    const removeEmployeeMutation = useMutation({
+        mutationFn: (employeeId: string) => deleteEmployeeWithShifts(employeeId, shifts),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.employees });
+            queryClient.invalidateQueries({ queryKey: queryKeys.shifts });
+        },
+        onError: (error) => console.error("Failed to remove employee:", error)
+    })
+
+    // Shifts
+    const addShift = useCallback(
+        (shift: Shift) => addShiftMutation.mutateAsync(shift),
+        [addShiftMutation]
+    );
+
+    const editShift = useCallback(
+        (shift: Shift) => editShiftMutation.mutateAsync(shift),
+        [editShiftMutation]
+    );
+
+    const removeShift = useCallback(
+        (id: string) => deleteShiftMutation.mutateAsync(id),
+        [deleteShiftMutation]
+    );
+
+    const copyShifts = useCallback(
+        (newShifts: Shift[]) => copyShiftsMutation.mutateAsync(newShifts),
+        [copyShiftsMutation]
+    );
+
+    const persistShift = useCallback(
+        (shift: Shift) => persistShiftMutation.mutateAsync(shift),
+        [persistShiftMutation]
+    );
+
+    // Employees
+
+    const addEmployee = useCallback(
+        (employee: Employee) => addEmployeeMutation.mutateAsync(employee),
+        [addEmployeeMutation]
+    );
+
+    const editEmployee = useCallback(
+        (employee: Employee) => editEmployeeMutation.mutateAsync(employee),
+        [editEmployeeMutation]
+    );
+
+    const removeEmployee = useCallback(
+        (employeeId: string) => removeEmployeeMutation.mutateAsync(employeeId),
+        [removeEmployeeMutation]
+    );
+
+    const isSavingEmployee = 
+        addEmployeeMutation.isPending ||
+        editEmployeeMutation.isPending ||
+        removeEmployeeMutation.isPending;
+
+    return {
+        shifts,
+        employees,
+        loading,
+        error,
+        // shift operations
+        addShift,
+        editShift,
+        removeShift,
+        copyShifts,
+        updateShiftLocal,
+        persistShift,
+        // employee operations
+        addEmployee,
+        editEmployee,
+        removeEmployee,
+        isSavingEmployee,
     }
-  }, []);
-
-  const copyShifts = useCallback(async (shiftsToCopy: Shift[]) => {
-    try {
-      setError(null);
-      const created = await Promise.all(
-        shiftsToCopy.map((shift) => createShift(shift))
-      );
-      setShifts((prev) => [...prev, ...created]);
-    } catch (err) {
-      setError("Failed to copy shifts.");
-      console.error(err);
-    }
-  }, []);
-
-  return {
-    shifts,
-    employees,
-    loading,
-    error,
-    addEmployee,
-    editEmployee,
-    removeEmployee,
-    addShift,
-    editShift,
-    removeShift,
-    updateShiftLocal,
-    persistShift,
-    copyShifts,
-  };
 }
