@@ -3,6 +3,9 @@ import { DAY_START, DAY_END, Employee, MIN_COL_WIDTH, SIDEBAR_WIDTH, ShiftModalP
 import { useScheduler } from '../hooks/Usescheduler';
 import { calcDraggedShift, calcOvertimeHours, calcResizedShift, calcWeeklyHours, clamp, cloneShift, generateId, hasConflict, isOvertime, shiftToGridPosition, snapHour } from '../utils/DateUtils';
 import ShiftCard from './ShiftCard';
+import AddShiftModal from './AddShiftModal';
+import CopyShiftModal from './CopyShiftModal';
+import ConfirmDialog from './ConfirmDialog';
 
 const RULER_HOURS: number[] = [];
 for (let h = DAY_START; h <= DAY_END; h += 2) RULER_HOURS.push(h);
@@ -67,6 +70,21 @@ const WeeklyScheduler: React.FC = () => {
   const [employeeModal, setEmployeeModal]     = useState<EmployeeModalState | null>(null);
   const [isSavingShift, setIsSavingShift]     = useState(false);
   const [isCopyingShift, setIsCopyingShift]    = useState(false);
+
+  // Confirm Dialog state
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: Boolean;
+    message: string;
+    onConfirm: () => void;
+  }>({ isOpen: false, message: '', onConfirm: () => {} });
+
+  const openConfirm = (message: string, onConfirm: () => void) => {
+    setConfirmDialog({ isOpen: true, message, onConfirm });
+  };
+
+  const closeConfirm = () => {
+    setConfirmDialog((prev) => ({ ...prev, isOpen: false }));
+  };
 
   // Drag state
 
@@ -200,14 +218,16 @@ const WeeklyScheduler: React.FC = () => {
     }
   };
 
-  const handleDeleteShift = async (id: string) => {
-    if (!window.confirm("Delete this shift?")) return;
-    try {
-      await removeShift(id);
-      showToast("Shift deleted", "info");
-    } catch {
-      showToast("Failed to delete shift", "error");
-    }
+ const handleDeleteShift = (id: string) => {
+    openConfirm('Are you sure you want to delete this shift?', async () => {
+      closeConfirm();
+      try {
+        await removeShift(id);
+        showToast('Shift deleted', 'info');
+      } catch {
+        showToast('Failed to delete shift', 'error');
+      }
+    });
   };
 
   const handleCopyConfirm = async (newShifts: Shift[]) => {
@@ -250,15 +270,19 @@ const WeeklyScheduler: React.FC = () => {
     }
   };
 
-  const handleDeleteEmployee = async (empId: string) => {
-    if (!window.confirm("Delete this employee and all their shifts?")) return;
-    try {
-      await removeEmployee(empId);
-      showToast("Employee removed", "info");
-    } catch {
-      showToast("Failed to remove employee", "error");
-    }
+ const handleDeleteEmployee = (empId: string) => {
+    openConfirm('Delete this employee and all their shifts? This cannot be undone.', async () => {
+      closeConfirm();
+      try {
+        await removeEmployee(empId);
+        showToast('Employee removed', 'info');
+      } catch {
+        showToast('Failed to remove employee', 'error');
+      }
+    });
   };
+
+
   // render helpers
    const renderRow = (emp: Employee) => {
     const empShifts = shifts.filter((s) => s.employeeId === emp.id);
@@ -285,7 +309,7 @@ const WeeklyScheduler: React.FC = () => {
               <div className="min-w-0 flex-1">
                 <p className="text-[12px] font-bold text-slate-100 truncate leading-tight">{emp.name}</p>
                 <p className="text-[9px] truncate"
-                  style={{ color: "#475569" }}
+                  style={{ color: "#fff" }}
                 >{emp.role}</p>
               </div>
               {!isPublished && (
@@ -351,7 +375,7 @@ const WeeklyScheduler: React.FC = () => {
     return (
     <div
       className="min-h-screen flex flex-col text-slate-200"
-      style={{ background: "#3068c2", fontFamily: "'Outfit', sans-serif" }}
+      style={{ background: "#080b12", fontFamily: "'Outfit', sans-serif" }}
       onMouseMove={handleMouseMove}
     >
       {/* ── TOP BAR */}
@@ -436,9 +460,267 @@ const WeeklyScheduler: React.FC = () => {
           </div>
         </div>
       </header>
+
+      {isPublished && (
+        <div className="px-6 py-2.5 flex items-center gap-2 text-sm font-semibold shrink-0"
+             style={{ background: 'rgba(20,83,45,0.2)', borderBottom: '1px solid rgba(22,101,52,0.35)', color: '#4ade80' }}>
+          🔒 Schedule published — switch to <strong>Draft</strong> to edit.
+        </div>
+      )}
+
+      {error && (
+         <div className="px-6 py-2.5 flex items-center gap-2 text-sm font-semibold shrink-0"
+             style={{ background: 'rgba(127,29,29,0.3)', borderBottom: '1px solid rgba(127,29,29,0.5)', color: '#fca5a5' }}>
+          ⚠ {error}
+        </div>
+      )}
+
+      {/* grid */}
+      {loading ? (
+         <div className="flex-1 flex items-center justify-center flex-col gap-3">
+          <div className="w-8 h-8 rounded-full border-2 animate-spin"
+               style={{ borderColor: '#6C63FF', borderTopColor: 'transparent' }} />
+          <p className="text-xs uppercase tracking-widest" style={{ color: '#334155' }}>
+            Connecting to json-server…
+          </p>
+          <p className="text-[10px] font-mono" style={{ color: '#1e2d40' }}>
+            npx json-server --watch src/db/db.json --port 5000
+          </p>
+        </div>
+      ) : (
+        <div className="flex-1 overflow-auto p-4">
+          <div 
+            ref={gridRef}
+            className="rounded-2xl overflow-hidden shadow-2xl select-none"
+            style={{ border: '1px solid rgba(255,255,255,0.06)', minWidth: SIDEBAR_WIDTH + MIN_COL_WIDTH * 7 }}
+          >
+            {/* Column header */}
+            <div className="flex sticky top-0 z-10"
+              style={{
+                height: HEADER_HEIGHT,
+                background: '#080b12',
+                borderBottom: '1px solid rgba(255,255,255,0.07)',
+              }}
+            >
+              <div className="shrink-0 flex items-end px-3 pb-2"
+                style={{ width: SIDEBAR_WIDTH, borderRight: '1px solid rgba(255,255,255,0.06)' }}>
+                  <span className="text-[8px] uppercase tracking-[0.22em]"
+                    style={{
+                      // color: '#1e2d40'
+                    }}
+                  >Employee</span>
+                </div>
+              {DAYS.map((day, di) => (
+                <div
+                  key={di}
+                  className="flex flex-col items-center justify-center border-r"
+                  style={{
+                    width: colWidth,
+                    borderColor: 'rgba(255,255,255,0.05)',
+                    background: di >= 5 ? '#0a0d14' : 'transparent',
+                  }}
+                >
+                  <span className={`text-[9px] font-black uppercase tracking-[0.2em] ${di >= 5 ? 'text-amber-500/70' : 'text-[#6C63FF]/70'}`}>
+                    {day}
+                  </span>
+                  <span className={`text-xl font-black leading-tight ${di >= 5 ? 'text-amber-400/80' : 'text-slate-100'}`}>
+                    {DAY_NUMBERS[di]}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* Employee rows */}
+            <div>
+              {employees.map((emp) => renderRow(emp))}
+            </div>
+          </div>
+
+          {/* Legend */}
+          <div className="mt-4 flex gap-5 flex-wrap">
+            {!isPublished ? (
+              [
+                ['🖱 Click empty area', 'add a shift'],
+                ['↔ Drag shift',        'move across days'],
+                ['⇔ Resize handles',    'adjust start or end'],
+                ['✏ Hover shift',       'edit / copy / delete'],
+                ['🔴 OT badge',          'weekly limit exceeded'],
+              ].map(([k, v]) => (
+                <span key={k} className="text-[11px]" style={{ color: '#334155' }}>
+                  <strong style={{ color: '#475569' }}>{k}</strong> — {v}
+                </span>
+              ))
+            ) : (
+              <span className="text-[11px] font-semibold" style={{ color: '#166534' }}>
+                🔒 Published — switch to Draft to edit
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* toast */}
+      {toast && (
+        <div
+          className="fixed bottom-7 right-7 z-50 px-5 py-3 rounded-xl text-sm font-semibold shadow-2xl max-w-xs"
+          style={{
+            animation: 'toastIn 0.25s ease',
+            background:
+              toast.type === 'error'   ? 'rgba(127,29,29,0.95)'
+            : toast.type === 'success' ? 'rgba(20,83,45,0.95)'
+                                       : 'rgba(30,40,60,0.95)',
+            border: `1px solid ${
+              toast.type === 'error'   ? 'rgba(220,38,38,0.4)'
+            : toast.type === 'success' ? 'rgba(22,163,74,0.4)'
+                                       : 'rgba(255,255,255,0.08)'
+            }`,
+            color:
+              toast.type === 'error'   ? '#fca5a5'
+            : toast.type === 'success' ? '#86efac'
+                                       : '#94a3b8',
+          }}
+        >
+          {toast.message}
+        </div>
+      )}
+
+      {/* shiftModal */}
+      {shiftModal && (
+        <AddShiftModal />
+      )}
+
+      {/* CopyModal */}
+      {copyModal && (
+        <CopyShiftModal />
+      )}
+
+      {employeeModal?.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4"
+            style={{ background: 'rgba(3,5,12,0.88)', backdropFilter: 'blur(10px)' }}
+            onClick={(e) => e.target === e.currentTarget && setEmployeeModal(null)}
+          >
+            <div className="w-full max-w-[400px] rounded-2xl overflow-hidden shadow-2xl"
+              style={{
+                background: '#0b0f1a',
+                border: '1px solid rgba(255,255,255,0.07)',
+                animation: 'modalIn 0.22s cubic-bezier(0.34,1.56,0.64,1)',
+              }}
+            >
+              <div
+              className="h-[3px]"
+              style={{
+                background: employeeModal.employee.color
+                  ? `linear-gradient(90deg,${employeeModal.employee.color},${employeeModal.employee.color}44)`
+                  : 'linear-gradient(90deg,#6C63FF,#6C63FF44)',
+              }}
+            />
+            <div className="p-7">
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <p 
+                  className="text-[10px] font-black tracking-[0.2em] uppercase mb-1.5"
+                  style={{ color: employeeModal.mode === 'edit' ? '#fb923c' : '#43D9AD' }}
+                  >
+                    {employeeModal.mode === 'edit' ? '✏ Edit Employee' : '＋ New Employee'}
+                  </p>
+                  <h2 className="text-xl font-black text-white tracking-tight">
+                    {employeeModal.mode === 'edit' ? 'Update Profile' : 'Add Team Member'}
+                  </h2>
+                </div>
+                <button onClick={() => setEmployeeModal(null)}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] hover:text-slate-300 transition-all text-sm">✕</button>
+              </div>
+              {/* Name */}
+              <div className="mb-4">
+                <label htmlFor="" 
+                  className="block text-[10px] font-semibold uppercase tracking-[0.18em] mb-1.5"
+                  style={{ color: '#475569' }}
+                  >
+                    Full Name
+                  </label>
+
+                  <input 
+                    type="text" 
+                    value={employeeModal.employee.name ?? ''}
+                    onChange={(e) =>
+                      setEmployeeModal((p) => p ? { ...p, employee: { ...p.employee, name: e.target.value } } : p)
+                    }
+                    placeholder="e.g. Alex Rivera"
+                    className="w-full px-3 py-2.5 rounded-xl text-sm text-slate-200 placeholder-slate-700"
+                    style={{ background: '#121826', border: '1px solid rgba(255,255,255,0.08)', colorScheme: 'dark' }}
+                  />
+              </div>
+
+              {/* Role */}
+              <div className="mb-4">
+                <label className="block text-[10px] font-semibold uppercase tracking-[0.18em] mb-1.5"
+                       style={{ color: '#475569' }}>Role</label>
+                <select
+                  value={employeeModal.employee.role ?? 'Barista'}
+                  onChange={(e) =>
+                    setEmployeeModal((p) => p ? { ...p, employee: { ...p.employee, role: e.target.value } } : p)
+                  }
+                  className="w-full px-3 py-2.5 rounded-xl text-sm text-slate-200 cursor-pointer"
+                  style={{ background: '#121826', border: '1px solid rgba(255,255,255,0.08)', colorScheme: 'dark' }}
+                >
+                  {ROLE_OPTIONS.map((r) => <option key={r}>{r}</option>)}
+                </select>
+              </div>
+
+              {/* Color */}
+                  <div className="mb-6">
+                <label className="block text-[10px] font-semibold uppercase tracking-[0.18em] mb-2"
+                       style={{ color: '#475569' }}>Colour</label>
+                <div className="flex flex-wrap gap-2">
+                  {COLOR_OPTIONS.map((c) => (
+                    <button
+                      key={c}
+                      onClick={() =>
+                        setEmployeeModal((p) => p ? { ...p, employee: { ...p.employee, color: c } } : p)
+                      }
+                      className="w-8 h-8 rounded-lg border-2 transition-all"
+                      style={{
+                        background: c,
+                        borderColor: employeeModal.employee.color === c ? '#fff' : 'transparent',
+                        boxShadow:   employeeModal.employee.color === c ? `0 0 0 2px ${c}60` : 'none',
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-2.5">
+                <button
+                  onClick={handleSaveEmployee}
+                  disabled={isSavingEmployee}
+                  className="flex-1 py-3 rounded-xl font-bold text-sm text-white tracking-wide
+                             disabled:opacity-50 active:scale-[0.98] transition-all"
+                  style={{ background: 'linear-gradient(135deg,#6C63FF,#a78bfa)' }}
+                >
+                  {isSavingEmployee ? 'Saving…' : employeeModal.mode === 'edit' ? 'Update' : 'Add Employee'}
+                </button>
+                {employeeModal.mode === 'edit' && employeeModal.employee.id && (
+                  <button
+                    onClick={() => handleDeleteEmployee(employeeModal.employee.id!)}
+                    className="px-4 py-3 rounded-xl font-bold text-sm text-red-400 active:scale-[0.98] transition-all"
+                    style={{ background: 'rgba(127,29,29,0.25)', border: '1px solid rgba(127,29,29,0.4)' }}
+                  >Remove</button>
+                )}
+              </div>
+            </div>
+            </div>
+        </div>
+      )}   
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        message={confirmDialog.message}
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={closeConfirm}
+      />
+
     </div>
   );
 };
-
 
 export default WeeklyScheduler;

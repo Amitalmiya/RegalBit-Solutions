@@ -13,7 +13,7 @@
       "employeeId": "e1",
       "dayIndex": 1,
       "startHour": 7.5,
-      "endHour": 13.5,
+      "endHour": 15.5,
       "label": "Morning"
     },
     {
@@ -45,32 +45,24 @@
       "employeeId": "e3",
       "dayIndex": 0,
       "startHour": 9,
-      "endHour": 17,
+      "endHour": 15,
       "label": "Full Day"
     },
     {
       "id": "s7",
       "employeeId": "e3",
-      "dayIndex": 4,
-      "startHour": 7.5,
-      "endHour": 15.5,
+      "dayIndex": 1,
+      "startHour": 7,
+      "endHour": 12.5,
       "label": "Full Day"
     },
     {
       "id": "s8",
       "employeeId": "e4",
-      "dayIndex": 4,
-      "startHour": 8.5,
-      "endHour": 16.5,
-      "label": "Night"
-    },
-    {
-      "id": "s9",
-      "employeeId": "e5",
       "dayIndex": 1,
       "startHour": 6,
       "endHour": 14,
-      "label": "Dawn"
+      "label": "Night"
     }
   ],
   "employees": [
@@ -108,6 +100,13 @@
       "role": "Barista",
       "color": "#38BDF8",
       "avatarInitials": "MB"
+    },
+    {
+      "id": "jnpqhki",
+      "name": "Jhon Duo",
+      "role": "Chef",
+      "color": "#fbbf24",
+      "avatarInitials": "JD"
     }
   ]
 }
