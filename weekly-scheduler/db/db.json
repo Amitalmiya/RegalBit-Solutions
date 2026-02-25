@@ -4,16 +4,8 @@
       "id": "s1",
       "employeeId": "e1",
       "dayIndex": 0,
-      "startHour": 8,
-      "endHour": 13,
-      "label": "Morning"
-    },
-    {
-      "id": "s2",
-      "employeeId": "e1",
-      "dayIndex": 1,
-      "startHour": 7.5,
-      "endHour": 15.5,
+      "startHour": 16,
+      "endHour": 21,
       "label": "Morning"
     },
     {
@@ -52,17 +44,65 @@
       "id": "s7",
       "employeeId": "e3",
       "dayIndex": 1,
-      "startHour": 7,
-      "endHour": 12.5,
+      "startHour": 12,
+      "endHour": 19.5,
       "label": "Full Day"
     },
     {
       "id": "s8",
       "employeeId": "e4",
-      "dayIndex": 1,
-      "startHour": 6,
-      "endHour": 14,
+      "dayIndex": 0,
+      "startHour": 14,
+      "endHour": 22,
       "label": "Night"
+    },
+    {
+      "id": "ft4ay39",
+      "employeeId": "e2",
+      "dayIndex": 1,
+      "startHour": 9,
+      "endHour": 15,
+      "label": "Night"
+    },
+    {
+      "id": "n4pq6lk",
+      "employeeId": "e3",
+      "dayIndex": 2,
+      "startHour": 10,
+      "endHour": 19.5,
+      "label": "Full Day"
+    },
+    {
+      "id": "y3tkipz",
+      "employeeId": "e4",
+      "dayIndex": 3,
+      "startHour": 13.5,
+      "endHour": 22,
+      "label": "over time"
+    },
+    {
+      "id": "l1r1jf5",
+      "employeeId": "e5",
+      "dayIndex": 4,
+      "startHour": 11.5,
+      "endHour": 22,
+      "label": "Afternoon"
+    },
+    {
+      "id": "w2eadll",
+      "employeeId": "jnpqhki",
+      "dayIndex": 0,
+      "startHour": 10,
+      "endHour": 19.5,
+      "label": "Full Day"
+    },
+    {
+      "id": "7gcg4fq",
+      "employeeId": "jnpqhki",
+      "dayIndex": 1,
+      "startHour": 10,
+      "endHour": 19.5,
+      "label": "Full Day"
     }
   ],
   "employees": [

@@ -1,5 +1,4 @@
-import React, { useRef } from "react";
-import type { Shift, Employee, DragState, ResizeState } from "../types/scheduler";
+import type { Shift, Employee } from "../types/scheduler";
 import { formatHour, formatDuration, isOvertime } from "../utils/DateUtils";
 
 const LABEL_ACCENT: Record<string, string> = {
