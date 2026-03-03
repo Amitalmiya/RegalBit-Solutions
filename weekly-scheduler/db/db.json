@@ -12,8 +12,8 @@
       "id": "s3",
       "employeeId": "e1",
       "dayIndex": 3,
-      "startHour": 6,
-      "endHour": 14,
+      "startHour": 9.5,
+      "endHour": 16,
       "label": "Mid"
     },
     {
@@ -44,7 +44,7 @@
       "id": "s7",
       "employeeId": "e3",
       "dayIndex": 1,
-      "startHour": 12,
+      "startHour": 10,
       "endHour": 19.5,
       "label": "Full Day"
     },
@@ -59,9 +59,9 @@
     {
       "id": "ft4ay39",
       "employeeId": "e2",
-      "dayIndex": 1,
-      "startHour": 9,
-      "endHour": 15,
+      "dayIndex": 2,
+      "startHour": 13.5,
+      "endHour": 22,
       "label": "Night"
     },
     {
@@ -69,7 +69,7 @@
       "employeeId": "e3",
       "dayIndex": 2,
       "startHour": 10,
-      "endHour": 19.5,
+      "endHour": 18,
       "label": "Full Day"
     },
     {
@@ -81,25 +81,17 @@
       "label": "over time"
     },
     {
-      "id": "l1r1jf5",
-      "employeeId": "e5",
-      "dayIndex": 4,
-      "startHour": 11.5,
-      "endHour": 22,
-      "label": "Afternoon"
-    },
-    {
-      "id": "w2eadll",
-      "employeeId": "jnpqhki",
+      "id": "m3g43ui",
+      "employeeId": "x7uiiab",
       "dayIndex": 0,
       "startHour": 10,
       "endHour": 19.5,
       "label": "Full Day"
     },
     {
-      "id": "7gcg4fq",
-      "employeeId": "jnpqhki",
-      "dayIndex": 1,
+      "id": "cgc5uqd",
+      "employeeId": "x7uiiab",
+      "dayIndex": 2,
       "startHour": 10,
       "endHour": 19.5,
       "label": "Full Day"
@@ -135,17 +127,10 @@
       "avatarInitials": "TM"
     },
     {
-      "id": "e5",
-      "name": "Morgan Blake",
-      "role": "Barista",
-      "color": "#38BDF8",
-      "avatarInitials": "MB"
-    },
-    {
-      "id": "jnpqhki",
+      "id": "x7uiiab",
       "name": "Jhon Duo",
-      "role": "Chef",
-      "color": "#fbbf24",
+      "role": "Barback",
+      "color": "#4ade80",
       "avatarInitials": "JD"
     }
   ]
