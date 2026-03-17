@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { getConversationsAPI } from '../services/messageService.js';
+import { getConversationsAPI } from '../services/messageService';
 
 export const fetchConversations = createAsyncThunk(
   'chat/fetchConversations',
@@ -16,12 +16,12 @@ export const fetchConversations = createAsyncThunk(
 const chatSlice = createSlice({
   name: 'chat',
   initialState: {
-    conversations:       [],
-    activeConversation:  null,
-    unreadCount:         0,
-    onlineUsers:         [],
-    loading:             false,
-    error:               null,
+    conversations:      [],
+    activeConversation: null,
+    unreadCount:        0,
+    onlineUsers:        [],
+    loading:            false,
+    error:              null,
   },
   reducers: {
     setActiveConversation(state, action) {
@@ -37,7 +37,6 @@ const chatSlice = createSlice({
       if (conv) {
         conv.lastMessage   = message;
         conv.lastMessageAt = message.createdAt;
-        // Move to top
         state.conversations = [
           conv,
           ...state.conversations.filter((c) => c._id !== conversationId),
@@ -52,16 +51,12 @@ const chatSlice = createSlice({
         state.onlineUsers = state.onlineUsers.filter((id) => id !== userId);
       }
     },
-    incrementUnread(state) {
-      state.unreadCount += 1;
-    },
-    resetUnread(state) {
-      state.unreadCount = 0;
-    },
+    incrementUnread(state) { state.unreadCount += 1; },
+    resetUnread(state)      { state.unreadCount  = 0; },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchConversations.pending,   (state) => { state.loading = true; })
+      .addCase(fetchConversations.pending,   (state) => { state.loading = true; state.error = null; })
       .addCase(fetchConversations.fulfilled, (state, action) => {
         state.loading       = false;
         state.conversations = action.payload;

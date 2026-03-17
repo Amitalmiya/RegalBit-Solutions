@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { getFeedAPI, toggleLikeAPI } from '../services/postService.js';
+import { getFeedAPI, toggleLikeAPI } from '../services/postService';
 
 export const fetchFeed = createAsyncThunk('posts/feed', async (page = 1, { rejectWithValue }) => {
   try {
@@ -22,11 +22,11 @@ export const likePost = createAsyncThunk('posts/like', async (postId, { rejectWi
 const postSlice = createSlice({
   name: 'posts',
   initialState: {
-    posts:      [],
-    loading:    false,
-    error:      null,
-    page:       1,
-    hasMore:    true,
+    posts:   [],
+    loading: false,
+    error:   null,
+    page:    1,
+    hasMore: true,
   },
   reducers: {
     clearPosts(state) {
@@ -61,9 +61,7 @@ const postSlice = createSlice({
 
     builder.addCase(likePost.fulfilled, (state, action) => {
       const post = state.posts.find((p) => p._id === action.payload.postId);
-      if (post) {
-        post.likesCount = action.payload.likesCount;
-      }
+      if (post) post.likesCount = action.payload.likesCount;
     });
   },
 });
